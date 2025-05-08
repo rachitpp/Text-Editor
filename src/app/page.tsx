@@ -1,103 +1,194 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import Sidebar from "@/components/Sidebar";
+import Note from "@/components/Note";
+import { motion } from "framer-motion";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [showLoaderTest, setShowLoaderTest] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // Wait for hydration to complete before rendering to prevent hydration errors
+  useEffect(() => {
+    // Add a minimum loading time to ensure the loading screen is visible
+    const minLoadingTime = setTimeout(() => {
+      setIsLoaded(true);
+    }, 1000); // Show loading screen for at least 1 second
+
+    // Handle redirect from login page if present
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.pathname === "/login" || url.searchParams.has("action")) {
+        // Replace the URL with the homepage without refreshing
+        window.history.replaceState({}, document.title, "/");
+      }
+    }
+
+    // Clean up timeout if component unmounts
+    return () => clearTimeout(minLoadingTime);
+  }, []);
+
+  // Close sidebar when clicking outside on mobile
+  const handleOverlayClick = () => {
+    setIsSidebarOpen(false);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
+
+  const LoadingScreen = () => (
+    <div className="flex items-center justify-center min-h-screen bg-white">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center px-6 py-10 bg-gradient-to-b from-white to-gray-50 rounded-2xl shadow-lg max-w-md mx-auto"
+      >
+        <div className="mb-6 relative">
+          {/* Logo-like element */}
+          <motion.div
+            className="w-20 h-20 mx-auto bg-indigo-50 rounded-xl flex items-center justify-center relative z-10"
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-indigo-500"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+          </motion.div>
+
+          {/* Animated loading spinner */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div
+              className="w-32 h-32 rounded-full border-4 border-transparent border-t-indigo-500 border-b-indigo-300"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+
+        <motion.h3
+          className="text-indigo-600 font-semibold text-xl mb-2"
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Loading your notes
+        </motion.h3>
+
+        <motion.p
+          className="text-gray-500 font-medium"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Please wait a moment while we prepare your workspace
+        </motion.p>
+
+        {/* Loading dots animation */}
+        <div className="flex justify-center gap-1 mt-4">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              className="w-2 h-2 bg-indigo-400 rounded-full"
+              animate={{ y: [0, -6, 0] }}
+              transition={{
+                duration: 0.8,
+                repeat: Infinity,
+                delay: i * 0.15,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </div>
+      </motion.div>
     </div>
+  );
+
+  if (!isLoaded || showLoaderTest) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <>
+      <button
+        className="sidebar-toggle"
+        onClick={toggleSidebar}
+        aria-label="Toggle sidebar"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      <div
+        className={`sidebar-overlay ${isSidebarOpen ? "open" : ""}`}
+        onClick={handleOverlayClick}
+      ></div>
+
+      <main className="main-layout">
+        <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
+          <Sidebar
+            isMobile={isMobile}
+            closeSidebar={() => setIsSidebarOpen(false)}
+          />
+        </div>
+        <Note isMobile={isMobile} />
+      </main>
+
+      {/* Test button to show loader (only visible in development) */}
+      {process.env.NODE_ENV !== "production" && (
+        <button
+          onClick={() => setShowLoaderTest(!showLoaderTest)}
+          className="fixed right-4 bottom-4 bg-indigo-500 text-white px-3 py-2 rounded-md text-sm font-medium shadow-md hover:bg-indigo-600 z-50"
+        >
+          {showLoaderTest ? "Hide" : "Show"} Loader
+        </button>
+      )}
+    </>
   );
 }
